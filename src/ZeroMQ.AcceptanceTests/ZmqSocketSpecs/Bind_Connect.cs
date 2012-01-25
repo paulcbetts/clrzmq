@@ -5,6 +5,23 @@
 
     using Machine.Specifications;
 
+    using ZeroMQ.AcceptanceTests.Fixtures;
+
+    class WhenBindingAndConnectingToATcpIpAddressAndPort : UsingReqRep
+    {
+        public override void Execute()
+        {
+            Rep.Bind("tcp://127.0.0.1:9000");
+            Req.Connect("tcp://127.0.0.1:9000");
+        }
+
+        [Spec]
+        public void ItShouldNotFail()
+        {
+            Assert.Null(ExecuteException);
+        }
+    }
+
     [Subject("Bind/Connect")]
     class when_binding_and_connecting_to_a_tcp_ip_address_and_port : using_req_rep
     {

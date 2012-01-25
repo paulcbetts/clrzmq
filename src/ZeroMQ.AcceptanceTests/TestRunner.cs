@@ -8,7 +8,10 @@
 
     class TestRunner
     {
-        private const string Indent = "  ";
+        private const string Indent = "    ";
+        private const string SpecPrefix = " -> ";
+        private const string FailedSuffix = " - FAILED";
+
         private static readonly Regex SpecNamePattern = new Regex(@"[A-Z_][a-z]*", RegexOptions.Compiled);
 
         private readonly AcceptanceTest _test;
@@ -35,16 +38,19 @@
 
             Console.WriteLine(_testName);
 
-            if (!Execute(() => _test.Setup(), "(Setup)"))
+            Exception setupException = CaptureException(() => _test.Setup());
+
+            if (setupException != null)
             {
+                WriteException("Setup", setupException);
                 return result;
             }
 
-            _test.ExecuteException = CaptureException(() => _test.Execute(), "(Execute)");
+            _test.ExecuteException = CaptureException(() => _test.Execute());
 
             foreach (MethodInfo methodInfo in specs)
             {
-                if (Execute(() => methodInfo.Invoke(_test, null), Indent + Specify(methodInfo.Name)))
+                if (ExecuteSpec(() => methodInfo.Invoke(_test, null), SpecPrefix + Specify(methodInfo.Name)))
                 {
                     result.Passed++;
                 }
@@ -55,39 +61,38 @@
             return result;
         }
 
-        private static bool Execute(Action action, string description)
+        private static bool ExecuteSpec(Action action, string description)
         {
-            try
-            {
-                action();
+            Exception ex = CaptureException(action);
 
+            if (ex == null)
+            {
                 Console.Out.WriteLine(description);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine(description);
-                Console.Error.WriteLine(MultilineIndent(Indent + Indent, ex.Message));
-
-                return false;
+                return true;
             }
 
-            return true;
+            WriteException(description + FailedSuffix, ex);
+            return false;
         }
 
-        private static Exception CaptureException(Action action, string description)
+        private static Exception CaptureException(Action action)
         {
             try
             {
-                Console.Out.WriteLine(description);
-
                 action();
             }
             catch (Exception ex)
             {
-                return ex;
+                return ex.InnerException ?? ex;
             }
 
             return null;
+        }
+
+        private static void WriteException(string description, Exception ex)
+        {
+            Console.Error.WriteLine(description);
+            Console.Error.WriteLine(MultilineIndent(ex.Message));
         }
 
         private static string Specify(string name)
@@ -95,9 +100,9 @@
             return string.Join(" ", SpecNamePattern.Matches(name).Cast<Match>().Select(match => match.Value.Replace("_", string.Empty)));
         }
 
-        private static string MultilineIndent(string indent, string text)
+        private static string MultilineIndent(string text)
         {
-            return string.Join(Environment.NewLine, text.Split(new[] { Environment.NewLine }, StringSplitOptions.None).Select(s => indent + s));
+            return string.Join(Environment.NewLine, text.Split(new[] { Environment.NewLine }, StringSplitOptions.None).Select(s => Indent + s));
         }
 
         private IEnumerable<MethodInfo> GetSpecs()

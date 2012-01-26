@@ -2,17 +2,14 @@
 {
     using System;
     using System.Threading;
-
-    using Machine.Specifications;
-
     using ZeroMQ.AcceptanceTests.Fixtures;
 
     class WhenBindingAndConnectingToATcpIpAddressAndPort : UsingReqRep
     {
         public override void Execute()
         {
-            Rep.Bind("tcp://127.0.0.1:9000");
-            Req.Connect("tcp://127.0.0.1:9000");
+            Receiver.Bind("tcp://127.0.0.1:9000");
+            Sender.Connect("tcp://127.0.0.1:9000");
         }
 
         [Spec]
@@ -22,122 +19,150 @@
         }
     }
 
-    [Subject("Bind/Connect")]
-    class when_binding_and_connecting_to_a_tcp_ip_address_and_port : using_req_rep
+    class WhenBindingToATcpPortAndConnectingToAddressAndPort : UsingReqRep
     {
-        Because of = () =>
-            exception = Catch.Exception(() =>
-            {
-                rep.Bind("tcp://127.0.0.1:9000");
-                req.Connect("tcp://127.0.0.1:9000");
-            });
+        public override void Execute()
+        {
+            Receiver.Bind("tcp://*:9000");
+            Sender.Connect("tcp://127.0.0.1:9000");
+        }
 
-        It should_not_fail = () =>
-            exception.ShouldBeNull();
+        [Spec]
+        public void ItShouldNotFail()
+        {
+            Assert.Null(ExecuteException);
+        }
     }
 
-    [Subject("Bind/Connect")]
-    class when_binding_to_a_tcp_port_and_connecting_to_address_and_port : using_req_rep
+    class WhenBindingAndConnectingToANamedInprocAddress : UsingReqRep
     {
-        Because of = () =>
-            exception = Catch.Exception(() =>
-            {
-                rep.Bind("tcp://*:9000");
-                req.Connect("tcp://127.0.0.1:9000");
-            });
+        public override void Execute()
+        {
+            Receiver.Bind("inproc://named");
+            Sender.Connect("inproc://named");
+        }
 
-        It should_not_fail = () =>
-            exception.ShouldBeNull();
+        [Spec]
+        public void ItShouldNotFail()
+        {
+            Assert.Null(ExecuteException);
+        }
     }
 
-    [Subject("Bind/Connect")]
-    class when_binding_and_connecting_to_a_named_inproc_address : using_req_rep
+    [Ignore("PGM is broken - LIBZMQ-303")]
+    class WhenConnectingToAPgmSocketWithPubAndSub : UsingPubSub
     {
-        Because of = () =>
-            exception = Catch.Exception(() =>
-            {
-                rep.Bind("inproc://named");
-                req.Connect("inproc://named");
-            });
+        public override void Execute()
+        {
+            Sender.Linger = TimeSpan.Zero;
+            Sender.Connect("epgm://127.0.0.1;239.192.1.1:5000");
 
-        It should_not_fail = () =>
-            exception.ShouldBeNull();
+            Receiver.Connect("epgm://127.0.0.1;239.192.1.1:5000");
+
+            // TODO: Is there any other way to ensure the PGM thread has started?
+            Thread.Sleep(100);
+        }
+
+        [Spec]
+        public void ItShouldNotFail()
+        {
+            Assert.Null(ExecuteException);
+        }
     }
 
-    [Subject("Connect"), Ignore("PGM is broken - LIBZMQ-303")]
-    class when_connecting_to_a_pgm_socket_with_pub_and_sub : using_pub_sub
+    [Ignore("PGM is broken - LIBZMQ-303")]
+    class WhenConnectingToAPgmSocketWithAnIncompatibleSocketType : UsingReq
     {
-        Because of = () =>
-            exception = Catch.Exception(() =>
-            {
-                pub.Linger = TimeSpan.Zero;
-                pub.Connect("epgm://127.0.0.1;239.192.1.1:5000");
+        public override void Execute()
+        {
+            Socket.Connect("epgm://127.0.0.1;239.192.1.1:5000");
+        }
 
-                sub.Connect("epgm://127.0.0.1;239.192.1.1:5000");
+        [Spec]
+        public void ItShouldFailBecausePgmIsNotSupported()
+        {
+            Assert.TypeOf<ZmqSocketException>(ExecuteException);
+        }
 
-                // TODO: Is there any other way to ensure the PGM thread has started?
-                Thread.Sleep(100);
-            });
+        [Spec]
+        public void ItShouldHaveAnErrorCodeOfEnocompatproto()
+        {
+            Assert.Equal(ErrorCode.ENOCOMPATPROTO, ((ZmqException)ExecuteException).ErrorCode);
+        }
 
-        It should_not_fail = () =>
-            exception.ShouldBeNull();
+        [Spec]
+        public void ItShouldHaveASpecificErrorMessage()
+        {
+            Assert.Contains("protocol is not compatible with the socket type", ExecuteException.Message);
+        }
     }
 
-    [Subject("Connect")]
-    class when_connecting_to_a_pgm_socket_with_an_incompatible_socket_type : using_req
+#if !UNIX
+    class WhenBindingToAnIpcAddress : UsingReq
     {
-        Because of = () =>
-            exception = Catch.Exception(() => socket.Connect("epgm://127.0.0.1;239.192.1.1:5000"));
+        public override void Execute()
+        {
+            Socket.Bind("ipc:///tmp/testsock");
+        }
 
-        It should_fail_because_pgm_is_not_supported = () =>
-            exception.ShouldBeOfType<ZmqException>();
+        [Spec]
+        public void ItShouldFailBecauseIpcIsNotSupportedOnWindows()
+        {
+            Assert.TypeOf<ZmqSocketException>(ExecuteException);
+        }
 
-        It should_have_an_error_code_of_enocompatproto = () =>
-            ((ZmqException)exception).ErrorCode.ShouldEqual(ErrorCode.ENOCOMPATPROTO);
+        [Spec]
+        public void ItShouldHaveAnErrorCodeOfEprotonosupport()
+        {
+            Assert.Equal(ErrorCode.EPROTONOSUPPORT, ((ZmqException)ExecuteException).ErrorCode);
+        }
 
-        It should_have_a_specific_error_message = () =>
-            exception.Message.ShouldContain("protocol is not compatible with the socket type");
+        [Spec]
+        public void ItShouldHaveASpecificErrorMessage()
+        {
+            Assert.Contains("Protocol not supported", ExecuteException.Message);
+        }
     }
 
-    [Subject("Bind")]
-    class when_binding_to_an_ipc_address : using_req_rep
+    class WhenConnectingToAnIpcAddress : UsingReq
     {
-        Because of = () =>
-            exception = Catch.Exception(() => rep.Bind("ipc:///tmp/testsock"));
-        
-        It should_have_an_error_code_of_eprotonosupport = () =>
-            ((ZmqException)exception).ErrorCode.ShouldEqual(ErrorCode.EPROTONOSUPPORT);
-        
-#if POSIX
-        It should_not_fail = () =>
-            exception.ShouldBeNull();
+        public override void Execute()
+        {
+            Socket.Connect("ipc:///tmp/testsock");
+        }
+
+        [Spec]
+        public void ItShouldFailBecauseIpcIsNotSupportedOnWindows()
+        {
+            Assert.TypeOf<ZmqSocketException>(ExecuteException);
+        }
+
+        [Spec]
+        public void ItShouldHaveAnErrorCodeOfEprotonosupport()
+        {
+            Assert.Equal(ErrorCode.EPROTONOSUPPORT, ((ZmqException)ExecuteException).ErrorCode);
+        }
+
+        [Spec]
+        public void ItShouldHaveASpecificErrorMessage()
+        {
+            Assert.Contains("Protocol not supported", ExecuteException.Message);
+        }
+    }
 #else
-        It should_fail_because_ipc_is_not_supported_on_windows = () =>
-            exception.ShouldBeOfType<ZmqException>();
-
-        It should_have_a_specific_error_message = () =>
-            exception.Message.ShouldContain("Protocol not supported");
-#endif
-    }
-
-    [Subject("Connect")]
-    class when_connecting_to_an_ipc_address : using_req_rep
+    class WhenBindingAndConnectingToAnIpcAddress : UsingReqRep
     {
-        Because of = () =>
-            exception = Catch.Exception(() => rep.Connect("ipc:///tmp/testsock"));
-        
-        It should_have_an_error_code_of_eprotonosupport = () =>
-            ((ZmqException)exception).ErrorCode.ShouldEqual(ErrorCode.EPROTONOSUPPORT);
-        
-#if POSIX
-        It should_not_fail = () =>
-            exception.ShouldBeNull();
-#else
-        It should_fail_because_ipc_is_not_supported_on_windows = () =>
-            exception.ShouldBeOfType<ZmqException>();
+        public override void Execute()
+        {
+            Receiver.Bind("ipc:///tmp/testsock");
+            Sender.Connect("ipc:///tmp/testsock");
+        }
 
-        It should_have_a_specific_error_message = () =>
-            exception.Message.ShouldContain("Protocol not supported");
-#endif
+        [Spec]
+        public void ItShouldNotFail()
+        {
+            Assert.Null(ExecuteException);
+        }
     }
+#endif
 }

@@ -1,23 +1,10 @@
 ﻿namespace ZeroMQ.AcceptanceTests.Fixtures
 {
-    abstract class UsingReqRep : AcceptanceTest
+    abstract class UsingReqRep : UsingSocketPair
     {
-        protected ZmqSocket Req;
-        protected ZmqSocket Rep;
-        protected ZmqContext ZmqContext;
-
-        public override void Setup()
+        protected UsingReqRep()
+            : base(SocketType.REQ, SocketType.REP)
         {
-            ZmqContext = ZmqContext.Create();
-            Req = ZmqContext.CreateSocket(SocketType.REQ);
-            Rep = ZmqContext.CreateSocket(SocketType.REP);
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            Req.Dispose();
-            Rep.Dispose();
-            ZmqContext.Dispose();
         }
     }
 }

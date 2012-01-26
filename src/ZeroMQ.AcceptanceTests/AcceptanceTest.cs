@@ -11,6 +11,16 @@
 
         public Exception ExecuteException { get; set; }
 
+        public bool IsIgnored
+        {
+            get { return GetType().HasCustomAttribute<IgnoreAttribute>(); }
+        }
+
+        public string IgnoredReason
+        {
+            get { return GetType().GetCustomAttribute<IgnoreAttribute>().Reason; }
+        }
+
         public abstract void Setup();
 
         public abstract void Execute();

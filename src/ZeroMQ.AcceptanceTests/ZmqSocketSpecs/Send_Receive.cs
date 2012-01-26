@@ -2,127 +2,99 @@
 {
     using System;
     using System.Threading;
-
-    using Machine.Specifications;
-
     using ZeroMQ.AcceptanceTests;
+    using SingleMessageNotReceived = ZeroMQ.AcceptanceTests.Behaviors.SingleMessageNotReceived;
+    using SingleMessageReceived = ZeroMQ.AcceptanceTests.Behaviors.SingleMessageReceived;
 
-    [Subject("Send/Receive")]
-    class when_transferring_in_blocking_mode : using_threaded_req_rep
+    class WhenTransferringInBlockingMode : SingleMessageReceived
     {
-        protected static Frame message;
-        protected static SendStatus sendResult;
-
-        Establish context = () =>
+        public WhenTransferringInBlockingMode()
         {
-            senderAction = req => sendResult = req.SendFrame(Messages.SingleMessage);
-            receiverAction = rep => message = rep.ReceiveFrame();
-        };
-
-        Because of = StartThreads;
-
-        Behaves_like<SingleMessageReceived> successfully_received_single_message;
+            SenderAction = req => SendResult = req.SendFrame(Messages.SingleMessage);
+            ReceiverAction = rep => Message = rep.ReceiveFrame();
+        }
     }
 
-    [Subject("Send/Receive")]
-    class when_transferring_with_an_ample_receive_timeout : using_threaded_req_rep
+    class WhenTransferringWithAnAmpleReceiveTimeout : SingleMessageReceived
     {
-        protected static Frame message;
-        protected static SendStatus sendResult;
-
-        Establish context = () =>
+        public WhenTransferringWithAnAmpleReceiveTimeout()
         {
-            senderAction = req =>
+            SenderAction = req =>
             {
                 Thread.Sleep(500);
-                sendResult = req.SendFrame(Messages.SingleMessage);
+                SendResult = req.SendFrame(Messages.SingleMessage);
             };
 
-            receiverAction = rep => message = rep.ReceiveFrame(TimeSpan.FromMilliseconds(2000));
-        };
-
-        Because of = StartThreads;
-
-        Behaves_like<SingleMessageReceived> successfully_received_single_message;
+            ReceiverAction = rep => Message = rep.ReceiveFrame(TimeSpan.FromMilliseconds(2000));
+        }
     }
 
-    [Subject("Send/Receive")]
-    class when_transferring_with_an_insufficient_receive_timeout : using_threaded_req_rep
+    class WhenTransferringWithAnInsufficientReceiveTimeout : SingleMessageNotReceived
     {
-        protected static Frame message;
-
-        Establish context = () =>
+        public WhenTransferringWithAnInsufficientReceiveTimeout()
         {
-            receiverAction = rep => message = rep.ReceiveFrame(TimeSpan.FromMilliseconds(5));
-        };
-
-        Because of = StartThreads;
-
-        Behaves_like<SingleMessageNotReceived> receiver_must_try_again;
-    }
-
-    [Subject("Send/Receive")]
-    class when_transferring_with_an_ample_external_receive_buffer : using_threaded_req_rep
-    {
-        protected static Frame message;
-        protected static Frame buffer;
-
-        Establish context = () =>
-        {
-            senderAction = req => req.SendFrame(Messages.SingleMessage);
-
-            buffer = new Frame(256);
-            receiverAction = rep => message = rep.ReceiveFrame(buffer);
-        };
-
-        Because of = StartThreads;
-
-        Behaves_like<SingleMessageReceivedWithExternalBuffer> successfully_received_message_with_buffer;
-
-        It should_return_the_supplied_buffer = () =>
-            message.ShouldBeTheSameAs(buffer);
-    }
-
-    [Subject("Send/Receive")]
-    class when_transferring_with_an_undersized_external_receive_buffer : using_threaded_req_rep
-    {
-        protected static Frame message;
-        protected static Frame buffer;
-
-        Establish context = () =>
-        {
-            senderAction = req => req.SendFrame(Messages.SingleMessage);
-
-            buffer = new Frame(1);
-            receiverAction = rep => message = rep.ReceiveFrame(buffer);
-        };
-
-        Because of = StartThreads;
-
-        Behaves_like<SingleMessageReceivedWithExternalBuffer> successfully_received_message_with_buffer;
-    }
-
-    [Subject("Send/Receive")]
-    class when_transferring_with_a_preallocated_receive_buffer : using_threaded_req_rep
-    {
-        protected static Frame message;
-        protected static SendStatus sendResult;
-        protected static int size;
-
-        Establish context = () =>
-        {
-            senderAction = req => sendResult = req.SendFrame(Messages.SingleMessage);
-
-            message = new Frame(100);
-            receiverAction = rep =>
+            SenderAction = req =>
             {
-                size = rep.Receive(message.Buffer);
-                message.MessageSize = size;
+                SendResult = req.SendFrame(Messages.SingleMessage);
+                Thread.Sleep(10);
             };
-        };
 
-        Because of = StartThreads;
+            ReceiverAction = rep => Message = rep.ReceiveFrame(TimeSpan.FromMilliseconds(1));
+        }
+    }
 
-        Behaves_like<SingleMessageReceived> successfully_received_message;
+    class WhenTransferringWithAnAmpleExternalReceiveBuffer : SingleMessageReceived
+    {
+        protected Frame Buffer;
+
+        public WhenTransferringWithAnAmpleExternalReceiveBuffer()
+        {
+            SenderAction = req => SendResult = req.SendFrame(Messages.SingleMessage);
+
+            Buffer = new Frame(256);
+            ReceiverAction = rep => Message = rep.ReceiveFrame(Buffer);
+        }
+
+        [Spec]
+        public void ShouldReturnTheSuppliedBuffer()
+        {
+            Assert.Same(Buffer, Message);
+        }
+    }
+
+    class WhenTransferringWithAnUndersizedExternalReceiveBuffer : SingleMessageReceived
+    {
+        protected static Frame Buffer;
+
+        public WhenTransferringWithAnUndersizedExternalReceiveBuffer()
+        {
+            SenderAction = req => SendResult = req.SendFrame(Messages.SingleMessage);
+
+            Buffer = new Frame(1);
+            ReceiverAction = rep => Message = rep.ReceiveFrame(Buffer);
+        }
+    }
+
+    class WhenTransferringWithAPreallocatedReceiveBuffer : SingleMessageReceived
+    {
+        protected static int Size;
+
+        public WhenTransferringWithAPreallocatedReceiveBuffer()
+        {
+            SenderAction = req => SendResult = req.SendFrame(Messages.SingleMessage);
+
+            Message = new Frame(100);
+            ReceiverAction = rep =>
+            {
+                Size = rep.Receive(Message.Buffer);
+                Message.MessageSize = Size;
+            };
+        }
+
+        [Spec]
+        public override void ItShouldBeSuccessfullyReceived()
+        {
+            Assert.NotNull(Message);
+        }
     }
 }

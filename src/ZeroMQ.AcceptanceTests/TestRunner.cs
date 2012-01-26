@@ -60,11 +60,11 @@
 
             foreach (MethodInfo methodInfo in specs)
             {
-                string specName = SpecPrefix + Specify(methodInfo.Name);
+                string specName = Specify(methodInfo.Name);
 
                 if (methodInfo.HasCustomAttribute<IgnoreAttribute>())
                 {
-                    WriteIgnoreMessage(specName, Indent + methodInfo.GetCustomAttribute<IgnoreAttribute>().Reason);
+                    WriteIgnoreMessage(SpecPrefix + specName, Indent + methodInfo.GetCustomAttribute<IgnoreAttribute>().Reason);
                     result.Ignored++;
                 }
                 else if (ExecuteSpec(() => methodInfo.Invoke(_test, null), specName))
@@ -84,11 +84,11 @@
 
             if (ex == null)
             {
-                Console.Out.WriteLine(description);
+                Console.Out.WriteLine(SpecPrefix + description);
                 return true;
             }
 
-            WriteException(FailedPrefix + description, ex);
+            WriteException(SpecPrefix + FailedPrefix + description, ex);
             return false;
         }
 

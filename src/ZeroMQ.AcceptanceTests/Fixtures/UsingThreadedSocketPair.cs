@@ -61,7 +61,7 @@
             });
         }
 
-        protected void StartThreads()
+        public override void Execute()
         {
             _receiverThread.Start();
             _senderThread.Start();

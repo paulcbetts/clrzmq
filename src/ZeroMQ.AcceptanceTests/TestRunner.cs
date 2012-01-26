@@ -10,7 +10,8 @@
     {
         private const string Indent = "    ";
         private const string SpecPrefix = " -> ";
-        private const string FailedSuffix = " - FAILED";
+        private const string FailedPrefix = "FAILED - ";
+        private const string IgnoredPrefix = "IGNORED - ";
 
         private static readonly Regex SpecNamePattern = new Regex(@"[A-Z_][a-z]*", RegexOptions.Compiled);
 
@@ -36,6 +37,15 @@
 
             var result = new TestResult { TotalSpecs = specs.Count() };
 
+            if (_test.IsIgnored)
+            {
+                WriteIgnoreMessage(_testName, _test.IgnoredReason);
+                result.Ignored += result.TotalSpecs;
+
+                Console.WriteLine();
+                return result;
+            }
+
             Console.WriteLine(_testName);
 
             Exception setupException = CaptureException(() => _test.Setup());
@@ -50,7 +60,14 @@
 
             foreach (MethodInfo methodInfo in specs)
             {
-                if (ExecuteSpec(() => methodInfo.Invoke(_test, null), SpecPrefix + Specify(methodInfo.Name)))
+                string specName = SpecPrefix + Specify(methodInfo.Name);
+
+                if (methodInfo.HasCustomAttribute<IgnoreAttribute>())
+                {
+                    WriteIgnoreMessage(specName, Indent + methodInfo.GetCustomAttribute<IgnoreAttribute>().Reason);
+                    result.Ignored++;
+                }
+                else if (ExecuteSpec(() => methodInfo.Invoke(_test, null), specName))
                 {
                     result.Passed++;
                 }
@@ -71,7 +88,7 @@
                 return true;
             }
 
-            WriteException(description + FailedSuffix, ex);
+            WriteException(FailedPrefix + description, ex);
             return false;
         }
 
@@ -93,6 +110,12 @@
         {
             Console.Error.WriteLine(description);
             Console.Error.WriteLine(MultilineIndent(ex.Message));
+        }
+
+        private static void WriteIgnoreMessage(string description, string reason)
+        {
+            Console.Out.WriteLine(IgnoredPrefix + description);
+            Console.Out.WriteLine(SpecPrefix + reason);
         }
 
         private static string Specify(string name)

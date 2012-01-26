@@ -100,6 +100,8 @@
     <Compile Include="Assert.cs" />
     <Compile Include="AssertException.cs" />
     <Compile Include="Behaviors.cs" />
+    <Compile Include="TypeExtensions.cs" />
+    <Compile Include="IgnoreAttribute.cs" />
     <Compile Include="DeviceSpecs\Forwarder.cs" />
     <Compile Include="DeviceSpecs\Queue.cs" />
     <Compile Include="DeviceSpecs\SpecContext.cs" />

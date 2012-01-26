@@ -15,5 +15,10 @@
 
             return methodInfo.GetCustomAttributes(typeof(TAttribute), true).Any();
         }
+
+        public static TAttribute GetCustomAttribute<TAttribute>(this MethodInfo methodInfo) where TAttribute : Attribute
+        {
+            return (TAttribute)methodInfo.GetCustomAttributes(typeof(TAttribute), true).Single();
+        }
     }
 }

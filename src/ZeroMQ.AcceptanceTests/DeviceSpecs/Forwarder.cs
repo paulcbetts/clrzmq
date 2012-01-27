@@ -1,111 +1,80 @@
 ﻿namespace ZeroMQ.AcceptanceTests.DeviceSpecs
 {
     using System;
+    using ZeroMQ.AcceptanceTests.Behaviors;
 
-    using Machine.Specifications;
-
-    using ZeroMQ.Devices;
-
-    [Subject("Forwarder")]
-    class when_using_forwarder_device_with_full_subscription : using_forwarder_device
+    class WhenUsingForwarderDeviceWithFullSubscription : ForwarderMessagesReceived
     {
-        protected static Frame message1;
-        protected static Frame message2;
-        protected static SendStatus sendResult1;
-        protected static SendStatus sendResult2;
-
-        Establish context = () =>
+        protected override void DeviceInit()
         {
-            deviceInit = dev => dev.FrontendSetup.SubscribeAll();
-            receiverInit = sub => sub.SubscribeAll();
+            Device.FrontendSetup.SubscribeAll();
+        }
 
-            receiverAction = sub =>
-            {
-                message1 = sub.ReceiveFrame();
-                message2 = sub.ReceiveFrame(TimeSpan.FromMilliseconds(500));
-            };
+        protected override void ReceiverInit()
+        {
+            Receiver.SubscribeAll();
+        }
 
-            senderAction = pub =>
-            {
-                sendResult1 = pub.SendFrame(Messages.PubSubFirst);
-                sendResult2 = pub.SendFrame(Messages.PubSubSecond);
-            };
-        };
+        protected override void SenderAction()
+        {
+            SendResult1 = Sender.SendFrame(Messages.PubSubFirst);
+            SendResult2 = Sender.SendFrame(Messages.PubSubSecond);
+        }
 
-        Because of = StartThreads;
-
-        Behaves_like<PubSubReceiveAll> successfully_received_all_messages;
+        protected override void ReceiverAction()
+        {
+            Message1 = Receiver.ReceiveFrame();
+            Message2 = Receiver.ReceiveFrame(TimeSpan.FromMilliseconds(50));
+        }
     }
 
-    [Subject("Forwarder")]
-    class when_using_forwarder_device_with_a_receiver_subscription : using_forwarder_device
+    class WhenUsingForwarderDeviceWithAReceiverSubscription : ForwarderMessageFiltered
     {
-        protected static Frame message1;
-        protected static Frame message2;
-        protected static SendStatus sendResult1;
-        protected static SendStatus sendResult2;
-
-        Establish context = () =>
+        protected override void DeviceInit()
         {
-            deviceInit = dev => dev.FrontendSetup.SubscribeAll();
-            receiverInit = sub => sub.Subscribe(Messages.PubSubPrefix);
+            Device.FrontendSetup.SubscribeAll();
+        }
 
-            receiverAction = sub =>
-            {
-                message1 = sub.ReceiveFrame();
-                message2 = sub.ReceiveFrame(TimeSpan.FromMilliseconds(500));
-            };
+        protected override void ReceiverInit()
+        {
+            Receiver.Subscribe(Messages.PubSubPrefix);
+        }
 
-            senderAction = pub =>
-            {
-                sendResult1 = pub.SendFrame(Messages.PubSubFirst);
-                sendResult2 = pub.SendFrame(Messages.PubSubSecond);
-            };
-        };
+        protected override void SenderAction()
+        {
+            SendResult1 = Sender.SendFrame(Messages.PubSubFirst);
+            SendResult2 = Sender.SendFrame(Messages.PubSubSecond);
+        }
 
-        Because of = StartThreads;
-
-        Behaves_like<PubSubReceiveFirst> successfully_received_first_message_and_filtered_out_second;
+        protected override void ReceiverAction()
+        {
+            Message1 = Receiver.ReceiveFrame();
+            Message2 = Receiver.ReceiveFrame(TimeSpan.FromMilliseconds(50));
+        }
     }
 
-    [Subject("Forwarder")]
-    class when_using_forwarder_device_with_a_device_subscription : using_forwarder_device
+    class WhenUsingForwarderDeviceWithADeviceSubscription : ForwarderMessageFiltered
     {
-        protected static Frame message1;
-        protected static Frame message2;
-        protected static SendStatus sendResult1;
-        protected static SendStatus sendResult2;
-
-        Establish context = () =>
+        protected override void DeviceInit()
         {
-            deviceInit = dev => dev.FrontendSetup.Subscribe(Messages.PubSubPrefix);
-            receiverInit = sub => sub.SubscribeAll();
+            Device.FrontendSetup.Subscribe(Messages.PubSubPrefix);
+        }
 
-            receiverAction = sub =>
-            {
-                message1 = sub.ReceiveFrame();
-                message2 = sub.ReceiveFrame(TimeSpan.FromMilliseconds(500));
-            };
-
-            senderAction = pub =>
-            {
-                sendResult1 = pub.SendFrame(Messages.PubSubFirst);
-                sendResult2 = pub.SendFrame(Messages.PubSubSecond);
-            };
-        };
-
-        Because of = StartThreads;
-
-        Behaves_like<PubSubReceiveFirst> successfully_received_first_message_and_filtered_out_second;
-    }
-
-    abstract class using_forwarder_device : using_threaded_device<ForwarderDevice>
-    {
-        static using_forwarder_device()
+        protected override void ReceiverInit()
         {
-            createSender = () => zmqContext.CreateSocket(SocketType.PUB);
-            createReceiver = () => zmqContext.CreateSocket(SocketType.SUB);
-            createDevice = () => new ForwarderDevice(zmqContext, FrontendAddr, BackendAddr);
+            Receiver.SubscribeAll();
+        }
+
+        protected override void SenderAction()
+        {
+            SendResult1 = Sender.SendFrame(Messages.PubSubFirst);
+            SendResult2 = Sender.SendFrame(Messages.PubSubSecond);
+        }
+
+        protected override void ReceiverAction()
+        {
+            Message1 = Receiver.ReceiveFrame();
+            Message2 = Receiver.ReceiveFrame(TimeSpan.FromMilliseconds(50));
         }
     }
 }

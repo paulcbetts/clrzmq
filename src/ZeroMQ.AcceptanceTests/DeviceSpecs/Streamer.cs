@@ -1,123 +1,72 @@
 ﻿namespace ZeroMQ.AcceptanceTests.DeviceSpecs
 {
     using System;
+    using ZeroMQ.AcceptanceTests.Behaviors;
 
-    using Machine.Specifications;
-
-    using ZeroMQ.Devices;
-
-    [Subject("Streamer")]
-    class when_using_streamer_device_to_send_a_single_message_in_blocking_mode : using_streamer_device
+    class WhenUsingStreamerDeviceToSendASingleMessageInBlockingMode : StreamerMessageReceived
     {
-        protected static Frame message;
-        protected static SendStatus sendResult;
-
-        Establish context = () =>
+        protected override void SenderAction()
         {
-            senderAction = req => sendResult = req.SendFrame(Messages.SingleMessage);
-            receiverAction = rep => message = rep.ReceiveFrame();
-        };
+            SendResult = Sender.SendFrame(Messages.SingleMessage);
+        }
 
-        Because of = StartThreads;
-
-        Behaves_like<SingleMessageReceived> successfully_sent_single_message;
+        protected override void ReceiverAction()
+        {
+            Message = Receiver.ReceiveFrame();
+        }
     }
 
-    [Subject("Streamer")]
-    class when_using_streamer_device_to_send_a_single_message_with_an_ample_timeout : using_streamer_device
+    class WhenUsingStreamerDeviceToSendASingleMessageWithAnAmpleTimeout : StreamerMessageReceived
     {
-        protected static Frame message;
-        protected static SendStatus sendResult;
-
-        Establish context = () =>
+        protected override void SenderAction()
         {
-            senderAction = req => sendResult = req.SendFrame(Messages.SingleMessage, TimeSpan.FromMilliseconds(2000));
-            receiverAction = rep => message = rep.ReceiveFrame(TimeSpan.FromMilliseconds(2000));
-        };
+            SendResult = Sender.SendFrame(Messages.SingleMessage, TimeSpan.FromMilliseconds(2000));
+        }
 
-        Because of = StartThreads;
-
-        Behaves_like<SingleMessageReceived> successfully_sent_single_message;
+        protected override void ReceiverAction()
+        {
+            Message = Receiver.ReceiveFrame(TimeSpan.FromMilliseconds(2000));
+        }
     }
 
-    [Subject("Streamer")]
-    class when_using_streamer_device_to_receive_a_single_message_with_insufficient_timeout : using_streamer_device
+    class WhenUsingStreamerDeviceToReceiveASingleMessageWithInsufficientTimeout : StreamerMessageNotReceived
     {
-        protected static Frame message;
-
-        Establish context = () =>
+        protected override void SenderAction()
         {
-            receiverAction = rep => message = rep.ReceiveFrame(TimeSpan.FromMilliseconds(0));
-        };
+            SendResult = Sender.SendFrame(Messages.SingleMessage);
+        }
 
-        Because of = StartThreads;
-
-        Behaves_like<SingleMessageNotReceived> receiver_must_try_again;
+        protected override void ReceiverAction()
+        {
+            Message = Receiver.ReceiveFrame(TimeSpan.FromMilliseconds(0));
+        }
     }
 
-    [Subject("Streamer")]
-    class when_using_streamer_device_to_send_a_multipart_message_in_blocking_mode : using_streamer_device
+    class WhenUsingStreamerDeviceToSendAMultipartMessageInBlockingMode : StreamerMultiPartMessageReceived
     {
-        protected static ZmqMessage message;
-        protected static SendStatus sendResult1;
-        protected static SendStatus sendResult2;
-
-        Establish context = () =>
+        protected override void SenderAction()
         {
-            senderAction = req =>
-            {
-                sendResult1 = req.SendFrame(Messages.MultiFirst);
-                sendResult2 = req.SendFrame(Messages.MultiLast);
-            };
+            SendResult1 = Sender.SendFrame(Messages.MultiFirst);
+            SendResult2 = Sender.SendFrame(Messages.MultiLast);
+        }
 
-            receiverAction = rep =>
-            {
-                message = rep.ReceiveMessage();
-            };
-        };
-
-        Because of = StartThreads;
-
-        Behaves_like<CompleteMessageReceived> successfully_sent_multi_part_message;
+        protected override void ReceiverAction()
+        {
+            Message = Receiver.ReceiveMessage();
+        }
     }
 
-    [Subject("Streamer")]
-    class when_using_streamer_device_to_send_a_multipart_message_with_an_ample_timeout : using_streamer_device
+    class WhenUsingStreamerDeviceToSendAMultipartMessageWithAnAmpleTimeout : StreamerMultiPartMessageReceived
     {
-        protected static ZmqMessage message;
-        protected static SendStatus sendResult1;
-        protected static SendStatus sendResult2;
-
-        Establish context = () =>
+        protected override void SenderAction()
         {
-            senderAction = req =>
-            {
-                sendResult1 = req.SendFrame(Messages.MultiFirst, TimeSpan.FromMilliseconds(2000));
-                sendResult2 = req.SendFrame(Messages.MultiLast, TimeSpan.FromMilliseconds(2000));
-            };
+            SendResult1 = Sender.SendFrame(Messages.MultiFirst, TimeSpan.FromMilliseconds(2000));
+            SendResult2 = Sender.SendFrame(Messages.MultiLast, TimeSpan.FromMilliseconds(2000));
+        }
 
-            receiverAction = rep =>
-            {
-                message = new ZmqMessage(new[]
-                {
-                    rep.ReceiveFrame(TimeSpan.FromMilliseconds(2000)),
-                    rep.ReceiveFrame(TimeSpan.FromMilliseconds(2000))
-                });
-            };
-        };
-
-        Because of = StartThreads;
-
-        Behaves_like<CompleteMessageReceived> sends_multi_part_message_successfully;
-    }
-
-    abstract class using_streamer_device : using_threaded_device<StreamerDevice>
-    {
-        static using_streamer_device()
+        protected override void ReceiverAction()
         {
-            createSender = () => zmqContext.CreateSocket(SocketType.PUSH);
-            createReceiver = () => zmqContext.CreateSocket(SocketType.PULL);
-            createDevice = () => new StreamerDevice(zmqContext, FrontendAddr, BackendAddr);
+            Message = Receiver.ReceiveMessage(TimeSpan.FromMilliseconds(2000));
         }
     }
 }

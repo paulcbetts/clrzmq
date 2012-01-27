@@ -85,9 +85,6 @@
     <StartupObject>ZeroMQ.AcceptanceTests.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Machine.Specifications">
-      <HintPath>..\..\packages\Machine.Specifications.0.5.3.0\lib\Machine.Specifications.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -99,7 +96,10 @@
   <ItemGroup>
     <Compile Include="Assert.cs" />
     <Compile Include="AssertException.cs" />
-    <Compile Include="Behaviors.cs" />
+    <Compile Include="Messages.cs" />
+    <Compile Include="Behaviors\StreamerMultiPartMessageReceived.cs" />
+    <Compile Include="Behaviors\StreamerMessageNotReceived.cs" />
+    <Compile Include="Behaviors\StreamerMessageReceived.cs" />
     <Compile Include="Behaviors\QueueMultiPartMessageReceived.cs" />
     <Compile Include="Behaviors\QueueMessageNotReceived.cs" />
     <Compile Include="Behaviors\QueueMessageReceived.cs" />
@@ -121,7 +121,6 @@
     <Compile Include="IgnoreAttribute.cs" />
     <Compile Include="DeviceSpecs\Forwarder.cs" />
     <Compile Include="DeviceSpecs\Queue.cs" />
-    <Compile Include="DeviceSpecs\SpecContext.cs" />
     <Compile Include="DeviceSpecs\Streamer.cs" />
     <Compile Include="Fixtures\UsingSocketPair.cs" />
     <Compile Include="Fixtures\UsingPubSub.cs" />
@@ -147,9 +146,6 @@
       <Project>{6FFD872F-A4A4-4EFA-9B4D-4342BA6CF250}</Project>
       <Name>ZeroMQ</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

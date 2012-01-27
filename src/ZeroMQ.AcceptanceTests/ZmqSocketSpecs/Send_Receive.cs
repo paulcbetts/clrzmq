@@ -4,8 +4,6 @@
     using System.Threading;
     using ZeroMQ.AcceptanceTests;
     using ZeroMQ.AcceptanceTests.Behaviors;
-    using SingleMessageNotReceived = ZeroMQ.AcceptanceTests.Behaviors.SingleMessageNotReceived;
-    using SingleMessageReceived = ZeroMQ.AcceptanceTests.Behaviors.SingleMessageReceived;
 
     class WhenTransferringInBlockingMode : SingleMessageReceived
     {

@@ -9,38 +9,42 @@
 
     class WhenTransferringInBlockingMode : SingleMessageReceived
     {
-        public WhenTransferringInBlockingMode()
+        protected override void SenderAction()
         {
-            SenderAction = req => SendResult = req.SendFrame(Messages.SingleMessage);
-            ReceiverAction = rep => Message = rep.ReceiveFrame();
+            SendResult = Sender.SendFrame(Messages.SingleMessage);
+        }
+
+        protected override void ReceiverAction()
+        {
+            Message = Receiver.ReceiveFrame();
         }
     }
 
     class WhenTransferringWithAnAmpleReceiveTimeout : SingleMessageReceived
     {
-        public WhenTransferringWithAnAmpleReceiveTimeout()
+        protected override void SenderAction()
         {
-            SenderAction = req =>
-            {
-                Thread.Sleep(500);
-                SendResult = req.SendFrame(Messages.SingleMessage);
-            };
+            Thread.Sleep(500);
+            SendResult = Sender.SendFrame(Messages.SingleMessage);
+        }
 
-            ReceiverAction = rep => Message = rep.ReceiveFrame(TimeSpan.FromMilliseconds(2000));
+        protected override void ReceiverAction()
+        {
+            Message = Receiver.ReceiveFrame(TimeSpan.FromMilliseconds(2000));
         }
     }
 
     class WhenTransferringWithAnInsufficientReceiveTimeout : SingleMessageNotReceived
     {
-        public WhenTransferringWithAnInsufficientReceiveTimeout()
+        protected override void SenderAction()
         {
-            SenderAction = req =>
-            {
-                SendResult = req.SendFrame(Messages.SingleMessage);
-                Thread.Sleep(10);
-            };
+            SendResult = Sender.SendFrame(Messages.SingleMessage);
+            Thread.Sleep(10);
+        }
 
-            ReceiverAction = rep => Message = rep.ReceiveFrame(TimeSpan.FromMilliseconds(1));
+        protected override void ReceiverAction()
+        {
+            Message = Receiver.ReceiveFrame(TimeSpan.FromMilliseconds(1));
         }
     }
 
@@ -48,18 +52,21 @@
     {
         protected Frame Buffer;
 
-        public WhenTransferringWithAnAmpleExternalReceiveBuffer()
-        {
-            SenderAction = req => SendResult = req.SendFrame(Messages.SingleMessage);
-
-            Buffer = new Frame(256);
-            ReceiverAction = rep => Message = rep.ReceiveFrame(Buffer);
-        }
-
         [Spec]
         public void ShouldReturnTheSuppliedBuffer()
         {
             Assert.Same(Buffer, Message);
+        }
+
+        protected override void SenderAction()
+        {
+            SendResult = Sender.SendFrame(Messages.SingleMessage);
+        }
+
+        protected override void ReceiverAction()
+        {
+            Buffer = new Frame(256);
+            Message = Receiver.ReceiveFrame(Buffer);
         }
     }
 
@@ -67,12 +74,15 @@
     {
         protected static Frame Buffer;
 
-        public WhenTransferringWithAnUndersizedExternalReceiveBuffer()
+        protected override void SenderAction()
         {
-            SenderAction = req => SendResult = req.SendFrame(Messages.SingleMessage);
+            SendResult = Sender.SendFrame(Messages.SingleMessage);
+        }
 
+        protected override void ReceiverAction()
+        {
             Buffer = new Frame(1);
-            ReceiverAction = rep => Message = rep.ReceiveFrame(Buffer);
+            Message = Receiver.ReceiveFrame(Buffer);
         }
     }
 
@@ -80,40 +90,28 @@
     {
         protected static int Size;
 
-        public WhenTransferringWithAPreallocatedReceiveBuffer()
-        {
-            SenderAction = req => SendResult = req.SendFrame(Messages.SingleMessage);
-
-            Message = new Frame(100);
-            ReceiverAction = rep =>
-            {
-                Size = rep.Receive(Message.Buffer);
-                Message.MessageSize = Size;
-            };
-        }
-
         [Spec]
         public override void ItShouldBeSuccessfullyReceived()
         {
             Assert.NotNull(Message);
         }
+
+        protected override void SenderAction()
+        {
+            SendResult = Sender.SendFrame(Messages.SingleMessage);
+        }
+
+        protected override void ReceiverAction()
+        {
+            Message = new Frame(100);
+
+            Size = Receiver.Receive(Message.Buffer);
+            Message.MessageSize = Size;
+        }
     }
 
     class WhenTransferringMultipartMessages : MultiPartMessageReceived
     {
-        public WhenTransferringMultipartMessages()
-        {
-            SenderAction = req =>
-            {
-                SendResult1 = SendResult2 = req.SendMessage(new ZmqMessage(new[] { Messages.MultiFirst, Messages.MultiLast }));
-            };
-
-            ReceiverAction = rep =>
-            {
-                Message = rep.ReceiveMessage();
-            };
-        }
-
         [Spec]
         public void ItShouldBeACompleteMessage()
         {
@@ -136,6 +134,16 @@
         public void ItShouldContainTheCorrectNumberOfBytes()
         {
             Assert.Equal(Messages.MultiFirst.MessageSize + Messages.MultiLast.MessageSize, Message.TotalSize);
+        }
+
+        protected override void SenderAction()
+        {
+            SendResult1 = SendResult2 = Sender.SendMessage(new ZmqMessage(new[] { Messages.MultiFirst, Messages.MultiLast }));
+        }
+
+        protected override void ReceiverAction()
+        {
+            Message = Receiver.ReceiveMessage();
         }
     }
 }

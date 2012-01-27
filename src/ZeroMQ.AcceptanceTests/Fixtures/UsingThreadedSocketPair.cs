@@ -1,21 +1,12 @@
 ﻿namespace ZeroMQ.AcceptanceTests.Fixtures
 {
-    using System;
     using System.Threading;
 
     abstract class UsingThreadedSocketPair : AcceptanceTest
     {
-        protected Func<ZmqSocket> CreateSender;
-        protected Func<ZmqSocket> CreateReceiver;
-
         protected ZmqContext Context;
         protected ZmqSocket Sender;
         protected ZmqSocket Receiver;
-
-        protected Action<ZmqSocket> SenderInit;
-        protected Action<ZmqSocket> SenderAction;
-        protected Action<ZmqSocket> ReceiverInit;
-        protected Action<ZmqSocket> ReceiverAction;
 
         private readonly ManualResetEvent _receiverReady = new ManualResetEvent(false);
 
@@ -29,11 +20,6 @@
         {
             _senderType = senderType;
             _receiverType = receiverType;
-
-            SenderInit = sck => { };
-            ReceiverInit = sck => { };
-            SenderAction = sck => { };
-            ReceiverAction = sck => { };
         }
 
         public override void Setup()
@@ -44,20 +30,20 @@
 
             _senderThread = new Thread(() =>
             {
-                SenderInit(Sender);
+                InitSender();
                 Sender.SendHighWatermark = 1;
                 _receiverReady.WaitOne();
                 Sender.Connect("inproc://spec_context");
-                SenderAction(Sender);
+                SenderAction();
             });
 
             _receiverThread = new Thread(() =>
             {
-                ReceiverInit(Receiver);
+                InitReceiver();
                 Receiver.SendHighWatermark = 1;
                 Receiver.Bind("inproc://spec_context");
                 _receiverReady.Set();
-                ReceiverAction(Receiver);
+                ReceiverAction();
             });
         }
 
@@ -76,6 +62,17 @@
                 _senderThread.Abort();
             }
         }
+
+        protected virtual void InitSender()
+        {
+        }
+
+        protected virtual void InitReceiver()
+        {
+        }
+
+        protected abstract void SenderAction();
+        protected abstract void ReceiverAction();
 
         protected override void Dispose(bool disposing)
         {

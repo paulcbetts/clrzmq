@@ -131,7 +131,6 @@
     <Compile Include="ZmqSocketSpecs\Bind_Connect.cs" />
     <Compile Include="ZmqSocketSpecs\Send_Receive.cs" />
     <Compile Include="ZmqSocketSpecs\SocketOptions.cs" />
-    <Compile Include="ZmqSocketSpecs\SpecContext.cs" />
     <Compile Include="ZmqSocketSpecs\Subscribe.cs" />
   </ItemGroup>
   <ItemGroup>

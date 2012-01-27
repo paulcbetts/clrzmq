@@ -7,53 +7,59 @@
 
     class WhenSubscribingToASpecificPrefix : SubscriptionMessageFiltered
     {
-        public WhenSubscribingToASpecificPrefix()
+        readonly ManualResetEvent _signal = new ManualResetEvent(false);
+
+        protected override void InitSender()
         {
-            var signal = new ManualResetEvent(false);
+            _signal.WaitOne(1000);
+        }
 
-            ReceiverInit = sub => sub.Subscribe(Messages.PubSubPrefix);
+        protected override void InitReceiver()
+        {
+            Receiver.Subscribe(Messages.PubSubPrefix);
+        }
 
-            ReceiverAction = sub =>
-            {
-                signal.Set();
+        protected override void SenderAction()
+        {
+            SendResult1 = Sender.SendFrame(Messages.PubSubFirst);
+            SendResult2 = Sender.SendFrame(Messages.PubSubSecond);
+        }
 
-                Message1 = sub.ReceiveFrame();
-                Message2 = sub.ReceiveFrame(TimeSpan.FromMilliseconds(500));
-            };
+        protected override void ReceiverAction()
+        {
+            _signal.Set();
 
-            SenderInit = pub => signal.WaitOne(1000);
-
-            SenderAction = pub =>
-            {
-                SendResult1 = pub.SendFrame(Messages.PubSubFirst);
-                SendResult2 = pub.SendFrame(Messages.PubSubSecond);
-            };
+            Message1 = Receiver.ReceiveFrame();
+            Message2 = Receiver.ReceiveFrame(TimeSpan.FromMilliseconds(500));
         }
     }
 
     class WhenSubscribingToAllPrefixes : SubscriptionMessagesReceived
     {
-        public WhenSubscribingToAllPrefixes()
+        readonly ManualResetEvent _signal = new ManualResetEvent(false);
+
+        protected override void InitSender()
         {
-            var signal = new ManualResetEvent(false);
+            _signal.WaitOne(1000);
+        }
 
-            ReceiverInit = sub => sub.Subscribe(new byte[0]);
+        protected override void InitReceiver()
+        {
+            Receiver.SubscribeAll();
+        }
 
-            ReceiverAction = sub =>
-            {
-                signal.Set();
+        protected override void SenderAction()
+        {
+            SendResult1 = Sender.SendFrame(Messages.PubSubFirst);
+            SendResult2 = Sender.SendFrame(Messages.PubSubSecond);
+        }
 
-                Message1 = sub.ReceiveFrame();
-                Message2 = sub.ReceiveFrame(TimeSpan.FromMilliseconds(500));
-            };
+        protected override void ReceiverAction()
+        {
+            _signal.Set();
 
-            SenderInit = pub => signal.WaitOne(1000);
-
-            SenderAction = pub =>
-            {
-                SendResult1 = pub.SendFrame(Messages.PubSubFirst);
-                SendResult2 = pub.SendFrame(Messages.PubSubSecond);
-            };
+            Message1 = Receiver.ReceiveFrame();
+            Message2 = Receiver.ReceiveFrame(TimeSpan.FromMilliseconds(500));
         }
     }
 }

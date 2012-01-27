@@ -1,226 +1,273 @@
 ﻿namespace ZeroMQ.AcceptanceTests.ZmqSocketSpecs
 {
     using System;
-    using Machine.Specifications;
+    using ZeroMQ.AcceptanceTests.Behaviors;
 
-    [Subject("Socket options")]
-    class when_setting_the_affinity_socket_option : using_req
+    class WhenSettingTheAffinitySocketOption : SocketOptionApplies
     {
-        Because of = () =>
-            exception = Catch.Exception(() => socket.Affinity = 0x03ul);
+        public override void Execute()
+        {
+            Socket.Affinity = 0x03ul;
+        }
 
-        It should_not_fail = () =>
-            exception.ShouldBeNull();
-
-        It should_return_the_given_value = () =>
-            socket.Affinity.ShouldEqual(0x03ul);
+        [Spec]
+        public void ItShouldReturnTheGivenValue()
+        {
+            Assert.Equal(0x03ul, Socket.Affinity);
+        }
     }
 
-    [Subject("Socket options")]
-    class when_setting_the_backlog_socket_option : using_req
+    class WhenSettingTheBacklogSocketOption : SocketOptionApplies
     {
-        Because of = () =>
-            exception = Catch.Exception(() => socket.Backlog = 6);
+        public override void Execute()
+        {
+            Socket.Backlog = 6;
+        }
 
-        It should_not_fail = () =>
-            exception.ShouldBeNull();
-
-        It should_return_the_given_value = () =>
-            socket.Backlog.ShouldEqual(6);
+        [Spec]
+        public void ItShouldReturnTheGivenValue()
+        {
+            Assert.Equal(6, Socket.Backlog);
+        }
     }
 
-    [Subject("Socket options")]
-    class when_setting_the_identity_socket_option : using_req
+    class WhenSettingTheIdentitySocketOption : SocketOptionApplies
     {
-        Because of = () =>
-            exception = Catch.Exception(() => socket.Identity = Messages.Identity);
+        public override void Execute()
+        {
+            Socket.Identity = Messages.Identity;
+        }
 
-        It should_not_fail = () =>
-            exception.ShouldBeNull();
-
-        It should_return_the_given_value = () =>
-            socket.Identity.ShouldEqual(Messages.Identity);
+        [Spec]
+        public void ItShouldReturnTheGivenValue()
+        {
+            Assert.Equal(Messages.Identity, Socket.Identity);
+        }
     }
 
-    [Subject("Socket options")]
-    class when_setting_the_linger_socket_option : using_req
+    class WhenSettingTheLingerSocketOption : SocketOptionApplies
     {
-        Because of = () =>
-            exception = Catch.Exception(() => socket.Linger = TimeSpan.FromMilliseconds(333));
+        public override void Execute()
+        {
+            Socket.Linger = TimeSpan.FromMilliseconds(333);
+        }
 
-        It should_not_fail = () =>
-            exception.ShouldBeNull();
-
-        It should_return_the_given_value = () =>
-            socket.Linger.ShouldEqual(TimeSpan.FromMilliseconds(333));
+        [Spec]
+        public void ItShouldReturnTheGivenValue()
+        {
+            Assert.Equal(TimeSpan.FromMilliseconds(333), Socket.Linger);
+        }
     }
 
-    [Subject("Socket options")]
-    class when_setting_the_max_message_size_socket_option : using_req
+    class WhenSettingTheMaxMessageSizeSocketOption : SocketOptionApplies
     {
-        Because of = () =>
-            exception = Catch.Exception(() => socket.MaxMessageSize = 60000L);
+        public override void Execute()
+        {
+            if (ZmqVersion.Current.IsAtLeast(3))
+            {
+                Socket.MaxMessageSize = 60000L;
+            }
+        }
 
-        It should_not_fail = () =>
-            exception.ShouldBeNull();
-
-        It should_return_the_given_value = () =>
-            socket.MaxMessageSize.ShouldEqual(60000L);
+        [Spec]
+        public void ItShouldReturnTheGivenValue()
+        {
+            if (ZmqVersion.Current.IsAtLeast(3))
+            {
+                Assert.Equal(60000L, Socket.MaxMessageSize);
+            }
+        }
     }
 
-    [Subject("Socket options")]
-    class when_setting_the_multicast_hops_socket_option : using_req
+    class WhenSettingTheMulticastHopsSocketOption : SocketOptionApplies
     {
-        Because of = () =>
-            exception = Catch.Exception(() => socket.MulticastHops = 6);
+        public override void Execute()
+        {
+            if (ZmqVersion.Current.IsAtLeast(3))
+            {
+                Socket.MulticastHops = 6;
+            }
+        }
 
-        It should_not_fail = () =>
-            exception.ShouldBeNull();
-
-        It should_return_the_given_value = () =>
-            socket.MulticastHops.ShouldEqual(6);
+        [Spec]
+        public void ItShouldReturnTheGivenValue()
+        {
+            if (ZmqVersion.Current.IsAtLeast(3))
+            {
+                Assert.Equal(6, Socket.MulticastHops);
+            }
+        }
     }
 
-    [Subject("Socket options")]
-    class when_setting_the_multicast_rate_socket_option : using_req
+    class WhenSettingTheMulticastRateSocketOption : SocketOptionApplies
     {
-        Because of = () =>
-            exception = Catch.Exception(() => socket.MulticastRate = 60);
+        public override void Execute()
+        {
+            Socket.MulticastRate = 60;
+        }
 
-        It should_not_fail = () =>
-            exception.ShouldBeNull();
-
-        It should_return_the_given_value = () =>
-            socket.MulticastRate.ShouldEqual(60);
+        [Spec]
+        public void ItShouldReturnTheGivenValue()
+        {
+            Assert.Equal(60, Socket.MulticastRate);
+        }
     }
 
-    [Subject("Socket options")]
-    class when_setting_the_multicast_recovery_interval_socket_option : using_req
+    class WhenSettingTheMulticastRecoveryIntervalSocketOption : SocketOptionApplies
     {
-        Because of = () =>
-            exception = Catch.Exception(() => socket.MulticastRecoveryInterval = TimeSpan.FromMilliseconds(333));
+        public override void Execute()
+        {
+            Socket.MulticastRecoveryInterval = TimeSpan.FromMilliseconds(333);
+        }
 
-        It should_not_fail = () =>
-            exception.ShouldBeNull();
-
-        It should_return_the_given_value = () =>
-            socket.MulticastRecoveryInterval.ShouldEqual(TimeSpan.FromMilliseconds(333));
+        [Spec]
+        public void ItShouldReturnTheGivenValue()
+        {
+            Assert.Equal(TimeSpan.FromMilliseconds(333), Socket.MulticastRecoveryInterval);
+        }
     }
 
-    [Subject("Socket options")]
-    class when_setting_the_receive_buffer_size_socket_option : using_req
+    class WhenSettingTheReceiveBufferSizeSocketOption : SocketOptionApplies
     {
-        Because of = () =>
-            exception = Catch.Exception(() => socket.ReceiveBufferSize = 10000);
+        public override void Execute()
+        {
+            Socket.ReceiveBufferSize = 10000;
+        }
 
-        It should_not_fail = () =>
-            exception.ShouldBeNull();
-
-        It should_return_the_given_value = () =>
-            socket.ReceiveBufferSize.ShouldEqual(10000);
+        [Spec]
+        public void ItShouldReturnTheGivenValue()
+        {
+            Assert.Equal(10000, Socket.ReceiveBufferSize);
+        }
     }
 
-    [Subject("Socket options")]
-    class when_setting_the_receive_high_watermark_socket_option : using_req
+    class WhenSettingTheReceiveHighWatermarkSocketOption : SocketOptionApplies
     {
-        Because of = () =>
-            exception = Catch.Exception(() => socket.ReceiveHighWatermark = 100);
+        public override void Execute()
+        {
+            Socket.ReceiveHighWatermark = 100;
+        }
 
-        It should_not_fail = () =>
-            exception.ShouldBeNull();
-
-        It should_return_the_given_value = () =>
-            socket.ReceiveHighWatermark.ShouldEqual(100);
+        [Spec]
+        public void ItShouldReturnTheGivenValue()
+        {
+            Assert.Equal(100, Socket.ReceiveHighWatermark);
+        }
     }
 
-    [Subject("Socket options")]
-    class when_setting_the_receive_timeout_socket_option : using_req
+    class WhenSettingTheReceiveTimeoutSocketOption : SocketOptionApplies
     {
-        Because of = () =>
-            exception = Catch.Exception(() => socket.ReceiveTimeout = TimeSpan.FromMilliseconds(333));
+        public override void Execute()
+        {
+            if (ZmqVersion.Current.IsAtLeast(3))
+            {
+                Socket.ReceiveTimeout = TimeSpan.FromMilliseconds(333);
+            }
+        }
 
-        It should_not_fail = () =>
-            exception.ShouldBeNull();
-
-        It should_return_the_given_value = () =>
-            socket.ReceiveTimeout.ShouldEqual(TimeSpan.FromMilliseconds(333));
+        [Spec]
+        public void ItShouldReturnTheGivenValue()
+        {
+            if (ZmqVersion.Current.IsAtLeast(3))
+            {
+                Assert.Equal(TimeSpan.FromMilliseconds(333), Socket.ReceiveTimeout);
+            }
+        }
     }
 
-    [Subject("Socket options")]
-    class when_setting_the_reconnect_interval_socket_option : using_req
+    class WhenSettingTheReconnectIntervalSocketOption : SocketOptionApplies
     {
-        Because of = () =>
-            exception = Catch.Exception(() => socket.ReconnectInterval = TimeSpan.FromMilliseconds(333));
+        public override void Execute()
+        {
+            Socket.ReconnectInterval = TimeSpan.FromMilliseconds(333);
+        }
 
-        It should_not_fail = () =>
-            exception.ShouldBeNull();
-
-        It should_return_the_given_value = () =>
-            socket.ReconnectInterval.ShouldEqual(TimeSpan.FromMilliseconds(333));
+        [Spec]
+        public void ItShouldReturnTheGivenValue()
+        {
+            Assert.Equal(TimeSpan.FromMilliseconds(333), Socket.ReconnectInterval);
+        }
     }
 
-    [Subject("Socket options")]
-    class when_setting_the_reconnect_interval_max_socket_option : using_req
+    class WhenSettingTheReconnectIntervalMaxSocketOption : SocketOptionApplies
     {
-        Because of = () =>
-            exception = Catch.Exception(() => socket.ReconnectIntervalMax = TimeSpan.FromMilliseconds(333));
+        public override void Execute()
+        {
+            Socket.ReconnectIntervalMax = TimeSpan.FromMilliseconds(333);
+        }
 
-        It should_not_fail = () =>
-            exception.ShouldBeNull();
-
-        It should_return_the_given_value = () =>
-            socket.ReconnectIntervalMax.ShouldEqual(TimeSpan.FromMilliseconds(333));
+        [Spec]
+        public void ItShouldReturnTheGivenValue()
+        {
+            Assert.Equal(TimeSpan.FromMilliseconds(333), Socket.ReconnectIntervalMax);
+        }
     }
 
-    [Subject("Socket options")]
-    class when_setting_the_send_buffer_size_socket_option : using_req
+    class WhenSettingTheSendBufferSizeSocketOption : SocketOptionApplies
     {
-        Because of = () =>
-            exception = Catch.Exception(() => socket.SendBufferSize = 10000);
+        public override void Execute()
+        {
+            Socket.SendBufferSize = 10000;
+        }
 
-        It should_not_fail = () =>
-            exception.ShouldBeNull();
-
-        It should_return_the_given_value = () =>
-            socket.SendBufferSize.ShouldEqual(10000);
+        [Spec]
+        public void ItShouldReturnTheGivenValue()
+        {
+            Assert.Equal(10000, Socket.SendBufferSize);
+        }
     }
 
-    [Subject("Socket options")]
-    class when_setting_the_send_high_watermark_socket_option : using_req
+    class WhenSettingTheSendHighWatermarkSocketOption : SocketOptionApplies
     {
-        Because of = () =>
-            exception = Catch.Exception(() => socket.SendHighWatermark = 100);
+        public override void Execute()
+        {
+            Socket.SendHighWatermark = 100;
+        }
 
-        It should_not_fail = () =>
-            exception.ShouldBeNull();
-
-        It should_return_the_given_value = () =>
-            socket.SendHighWatermark.ShouldEqual(100);
+        [Spec]
+        public void ItShouldReturnTheGivenValue()
+        {
+            Assert.Equal(100, Socket.SendHighWatermark);
+        }
     }
 
-    [Subject("Socket options")]
-    class when_setting_the_send_timeout_socket_option : using_req
+    class WhenSettingTheSendTimeoutSocketOption : SocketOptionApplies
     {
-        Because of = () =>
-            exception = Catch.Exception(() => socket.SendTimeout = TimeSpan.FromMilliseconds(333));
+        public override void Execute()
+        {
+            if (ZmqVersion.Current.IsAtLeast(3))
+            {
+                Socket.SendTimeout = TimeSpan.FromMilliseconds(333);
+            }
+        }
 
-        It should_not_fail = () =>
-            exception.ShouldBeNull();
-
-        It should_return_the_given_value = () =>
-            socket.SendTimeout.ShouldEqual(TimeSpan.FromMilliseconds(333));
+        [Spec]
+        public void ItShouldReturnTheGivenValue()
+        {
+            if (ZmqVersion.Current.IsAtLeast(3))
+            {
+                Assert.Equal(TimeSpan.FromMilliseconds(333), Socket.SendTimeout);
+            }
+        }
     }
 
-    [Subject("Socket options")]
-    class when_setting_the_supported_protocol_socket_option : using_req
+    class WhenSettingTheSupportedProtocolSocketOption : SocketOptionApplies
     {
-        Because of = () =>
-            exception = Catch.Exception(() => socket.SupportedProtocol = ProtocolType.Both);
+        public override void Execute()
+        {
+            if (ZmqVersion.Current.IsAtLeast(3))
+            {
+                Socket.SupportedProtocol = ProtocolType.Both;
+            }
+        }
 
-        It should_not_fail = () =>
-            exception.ShouldBeNull();
-
-        It should_return_the_given_value = () =>
-            socket.SupportedProtocol.ShouldEqual(ProtocolType.Both);
+        [Spec]
+        public void ItShouldReturnTheGivenValue()
+        {
+            if (ZmqVersion.Current.IsAtLeast(3))
+            {
+                Assert.Equal(ProtocolType.Both, Socket.SupportedProtocol);
+            }
+        }
     }
 }

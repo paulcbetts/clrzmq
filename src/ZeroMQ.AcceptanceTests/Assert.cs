@@ -41,6 +41,11 @@
             // ReSharper restore CompareNonConstrainedGenericWithNull
         }
 
+        public static void Equal<T>(T[] expected, T[] actual)
+        {
+            Equal((IEnumerable<T>)expected, actual);
+        }
+
         public static void Equal<T>(IEnumerable<T> expected, IEnumerable<T> actual)
         {
             IEnumerator<T> expectedEnumerator = expected.GetEnumerator();

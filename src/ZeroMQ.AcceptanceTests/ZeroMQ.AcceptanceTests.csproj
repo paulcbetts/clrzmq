@@ -100,6 +100,9 @@
     <Compile Include="Assert.cs" />
     <Compile Include="AssertException.cs" />
     <Compile Include="Behaviors.cs" />
+    <Compile Include="Behaviors\QueueMultiPartMessageReceived.cs" />
+    <Compile Include="Behaviors\QueueMessageNotReceived.cs" />
+    <Compile Include="Behaviors\QueueMessageReceived.cs" />
     <Compile Include="Behaviors\ForwarderMessagesReceived.cs" />
     <Compile Include="Behaviors\ForwarderMessageFiltered.cs" />
     <Compile Include="Behaviors\SubscriptionMessagesReceived.cs" />

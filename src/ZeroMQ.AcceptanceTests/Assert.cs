@@ -2,7 +2,9 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
 
+    [DebuggerStepThrough]
     static class Assert
     {
         public static void Equal<T>(T expected, T actual)

@@ -7,17 +7,28 @@
     {
         public static void Equal<T>(T expected, T actual)
         {
-            if (expected == null && actual != null)
+            // ReSharper disable CompareNonConstrainedGenericWithNull
+            if (typeof(T).IsClass)
             {
-                throw new AssertException("null", actual.ToString(), typeof(T), typeof(T));
+                if (expected == null && actual != null)
+                {
+                    throw new AssertException("null", actual.ToString(), typeof(T), typeof(T));
+                }
+
+                if (expected != null && actual == null)
+                {
+                    throw new AssertException(expected.ToString(), "null", typeof(T), typeof(T));
+                }
+
+                if (actual == null)
+                {
+                    return;
+                }
             }
 
-            if (expected != null && actual == null)
-            {
-                throw new AssertException(expected.ToString(), "null", typeof(T), typeof(T));
-            }
+            var equatable = actual as IEquatable<T>;
 
-            if (expected == null && actual == null)
+            if (equatable != null && equatable.Equals(expected))
             {
                 return;
             }
@@ -26,6 +37,8 @@
             {
                 throw new AssertException(expected.ToString(), actual.ToString(), typeof(T), typeof(T));
             }
+
+            // ReSharper restore CompareNonConstrainedGenericWithNull
         }
 
         public static void Equal<T>(IEnumerable<T> expected, IEnumerable<T> actual)

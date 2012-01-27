@@ -3,6 +3,7 @@
     using System;
     using System.Threading;
     using ZeroMQ.AcceptanceTests;
+    using ZeroMQ.AcceptanceTests.Behaviors;
     using SingleMessageNotReceived = ZeroMQ.AcceptanceTests.Behaviors.SingleMessageNotReceived;
     using SingleMessageReceived = ZeroMQ.AcceptanceTests.Behaviors.SingleMessageReceived;
 
@@ -95,6 +96,46 @@
         public override void ItShouldBeSuccessfullyReceived()
         {
             Assert.NotNull(Message);
+        }
+    }
+
+    class WhenTransferringMultipartMessages : MultiPartMessageReceived
+    {
+        public WhenTransferringMultipartMessages()
+        {
+            SenderAction = req =>
+            {
+                SendResult1 = SendResult2 = req.SendMessage(new ZmqMessage(new[] { Messages.MultiFirst, Messages.MultiLast }));
+            };
+
+            ReceiverAction = rep =>
+            {
+                Message = rep.ReceiveMessage();
+            };
+        }
+
+        [Spec]
+        public void ItShouldBeACompleteMessage()
+        {
+            Assert.True(Message.IsComplete);
+        }
+
+        [Spec]
+        public void ItShouldNotBeAnEmptyMessage()
+        {
+            Assert.False(Message.IsEmpty);
+        }
+
+        [Spec]
+        public void ItShouldContainTheCorrectNumberOfFrames()
+        {
+            Assert.Equal(2, Message.FrameCount);
+        }
+
+        [Spec]
+        public void ItShouldContainTheCorrectNumberOfBytes()
+        {
+            Assert.Equal(Messages.MultiFirst.MessageSize + Messages.MultiLast.MessageSize, Message.TotalSize);
         }
     }
 }

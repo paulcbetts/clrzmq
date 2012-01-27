@@ -53,25 +53,6 @@
     }
 
     [Behaviors]
-    class SingleMessageReceivedWithExternalBuffer
-    {
-        protected static Frame message;
-        protected static Frame buffer;
-
-        It should_be_successfully_received = () =>
-            message.ShouldNotBeNull();
-
-        It should_set_the_actual_message_size = () =>
-            message.MessageSize.ShouldEqual(Messages.SingleMessage.MessageSize);
-
-        It should_contain_the_given_message = () =>
-            message.Buffer.Take(message.MessageSize).ShouldEqual(Messages.SingleMessage.Buffer);
-
-        It should_not_have_more_parts = () =>
-            message.HasMore.ShouldBeFalse();
-    }
-
-    [Behaviors]
     class CompleteMessageReceived
     {
         protected static ZmqMessage message;

@@ -100,10 +100,13 @@
     <Compile Include="Assert.cs" />
     <Compile Include="AssertException.cs" />
     <Compile Include="Behaviors.cs" />
+    <Compile Include="Behaviors\SubscriptionMessagesReceived.cs" />
     <Compile Include="Behaviors\MultiPartMessageReceived.cs" />
     <Compile Include="Behaviors\SingleMessageNotReceived.cs" />
     <Compile Include="Behaviors\SingleMessageReceived.cs" />
     <Compile Include="Behaviors\SocketOptionApplies.cs" />
+    <Compile Include="Behaviors\SubscriptionMessageFiltered.cs" />
+    <Compile Include="Fixtures\UsingThreadedPubSub.cs" />
     <Compile Include="Fixtures\UsingThreadedReqRep.cs" />
     <Compile Include="TypeExtensions.cs" />
     <Compile Include="IgnoreAttribute.cs" />

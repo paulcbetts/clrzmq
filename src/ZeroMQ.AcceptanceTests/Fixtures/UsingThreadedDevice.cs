@@ -24,6 +24,7 @@
 
         private static ManualResetEvent DeviceReady;
         private static ManualResetEvent ReceiverSignal;
+        private static ManualResetEvent ReceiverDone;
 
         public override void Setup()
         {
@@ -35,6 +36,7 @@
 
             DeviceReady = new ManualResetEvent(false);
             ReceiverSignal = new ManualResetEvent(false);
+            ReceiverDone = new ManualResetEvent(false);
 
             DeviceThread = new Thread(StartDevice);
             ReceiverThread = new Thread(StartReceiver);
@@ -104,6 +106,8 @@
             ReceiverSignal.Set();
 
             ReceiverAction();
+
+            ReceiverDone.Set();
         }
 
         protected void StartSender()
@@ -119,6 +123,8 @@
 
         protected override void Dispose(bool disposing)
         {
+            ReceiverDone.WaitOne();
+
             if (Sender != null)
             {
                 Sender.Dispose();

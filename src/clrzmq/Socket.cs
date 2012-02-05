@@ -708,8 +708,8 @@ namespace ZMQ {
         /// <param name="message">Message</param>
         /// <param name="length">Length of data to send from message</param>
         /// <param name="flags">Send Options</param>
-        public void Send(byte[] message, int length, params SendRecvOpt[] flags) {
-            Send(message, 0, length, flags);
+        public bool Send(byte[] message, int length, params SendRecvOpt[] flags) {
+            return Send(message, 0, length, flags);
         }
 
         /// <summary>
@@ -719,7 +719,7 @@ namespace ZMQ {
         /// <param name="startIndex">Index to start reading data from</param>
         /// <param name="length">Length of data to send from message, starting at startIndex</param>
         /// <param name="flags">Send Options</param>
-        public void Send(byte[] message, int startIndex, int length, params SendRecvOpt[] flags) {
+        public bool Send(byte[] message, int startIndex, int length, params SendRecvOpt[] flags) {
             if (message == null) {
                 throw new ArgumentNullException("message");
             }
@@ -735,14 +735,16 @@ namespace ZMQ {
             }
 
             if (C.zmq_msg_init_size(_msg, length) != 0) {
-                throw new Exception();
+                return false;
             }
 
             Marshal.Copy(message, startIndex, C.zmq_msg_data(_msg), length);
 
             if (C.zmq_send(Ptr, _msg, flagsVal) != 0) {
-                throw new Exception();
+                return false;
             }
+
+            return true;
         }
 
         /// <summary>
@@ -751,12 +753,12 @@ namespace ZMQ {
         /// <param name="message">Message</param>
         /// <param name="flags">Send Options</param>
         /// <exception cref="ZMQ.Exception">ZMQ Exception</exception>
-        public void Send(byte[] message, params SendRecvOpt[] flags) {
+        public bool Send(byte[] message, params SendRecvOpt[] flags) {
             if (message == null) {
                 throw new ArgumentNullException("message");
             }
 
-            Send(message, 0, message.Length, flags);
+            return Send(message, 0, message.Length, flags);
         }
 
         /// <summary>
@@ -764,8 +766,8 @@ namespace ZMQ {
         /// </summary>
         /// <param name="message">Message</param>
         /// <exception cref="ZMQ.Exception">ZMQ Exception</exception>
-        public void Send(byte[] message) {
-            Send(message, SendRecvOpt.NONE);
+        public bool Send(byte[] message) {
+            return Send(message, SendRecvOpt.NONE);
         }
 
         /// <summary>
@@ -774,22 +776,22 @@ namespace ZMQ {
         /// <param name="message">Message string</param>
         /// <param name="encoding">String encoding</param>
         /// <exception cref="ZMQ.Exception">ZMQ Exception</exception>
-        public void Send(string message, Encoding encoding) {
-            Send(message, encoding, SendRecvOpt.NONE);
+        public bool Send(string message, Encoding encoding) {
+            return Send(message, encoding, SendRecvOpt.NONE);
         }
 
         /// <summary>
         /// Send empty message part
         /// </summary>
-        public void Send() {
-            Send(new byte[0]);
+        public bool Send() {
+            return Send(new byte[0]);
         }
 
         /// <summary>
         /// Send empty message part
         /// </summary>
-        public void SendMore() {
-            Send(new byte[0], SendRecvOpt.SNDMORE);
+        public bool SendMore() {
+            return Send(new byte[0], SendRecvOpt.SNDMORE);
         }
 
         /// <summary>
@@ -797,8 +799,8 @@ namespace ZMQ {
         /// </summary>
         /// <param name="message">Message</param>
         /// <exception cref="ZMQ.Exception">ZMQ Exception</exception>
-        public void SendMore(byte[] message) {
-            Send(message, SendRecvOpt.SNDMORE);
+        public bool SendMore(byte[] message) {
+            return Send(message, SendRecvOpt.SNDMORE);
         }
 
         /// <summary>
@@ -807,8 +809,8 @@ namespace ZMQ {
         /// <param name="message">Message</param>
         /// <param name="encoding">String encoding</param>
         /// <exception cref="ZMQ.Exception">ZMQ Exception</exception>
-        public void SendMore(string message, Encoding encoding) {
-            Send(message, encoding, SendRecvOpt.SNDMORE);
+        public bool SendMore(string message, Encoding encoding) {
+            return Send(message, encoding, SendRecvOpt.SNDMORE);
         }
 
         /// <summary>
@@ -818,8 +820,8 @@ namespace ZMQ {
         /// <param name="encoding">String encoding</param>
         /// <param name="flags">Send options</param>
         /// <exception cref="ZMQ.Exception">ZMQ Exception</exception>
-        public void SendMore(string message, Encoding encoding, params SendRecvOpt[] flags) {
-            Send(message, encoding, flags);
+        public bool SendMore(string message, Encoding encoding, params SendRecvOpt[] flags) {
+            return Send(message, encoding, flags);
         }
 
         /// <summary>
@@ -829,8 +831,8 @@ namespace ZMQ {
         /// <param name="encoding">Encoding to use when sending</param>
         /// <param name="flags">Send Options</param>
         /// <exception cref="ZMQ.Exception">ZMQ Exception</exception>
-        public void Send(string message, Encoding encoding, params SendRecvOpt[] flags) {
-            Send(encoding.GetBytes(message), flags);
+        public bool Send(string message, Encoding encoding, params SendRecvOpt[] flags) {
+            return Send(encoding.GetBytes(message), flags);
         }
 
         /// <summary>

@@ -61,6 +61,8 @@ namespace ZMQ {
             _processorCount = Environment.ProcessorCount;
         }
 
+        public SocketType SocketType { get; protected set; }
+
         /// <summary>
         /// Create Socket using application wide Context. OBSOLETE: use <see cref="Context.Socket"/> and
         /// avoid using application-wide Context objects.
@@ -74,6 +76,8 @@ namespace ZMQ {
                 }
                 Ptr = _appContext.CreateSocketPtr(type);
             }
+
+            SocketType = type;
             Interlocked.Increment(ref _appSocketCount);
             CommonInit(true);
         }

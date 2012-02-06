@@ -68,7 +68,6 @@ namespace ZMQ {
         /// avoid using application-wide Context objects.
         /// </summary>
         /// <param name="type">Socket type</param>
-        [Obsolete("Sockets should be constructed using Context.Socket. Will be removed in 3.x.")]
         public Socket(SocketType type) {
             lock (_lockObj) {
                 if (_appContext == null) {
@@ -641,7 +640,6 @@ namespace ZMQ {
         /// <param name="flags">Receive options</param>
         /// <returns>Queue of message parts</returns>
         /// <exception cref="ZMQ.Exception">ZMQ Exception</exception>
-        [Obsolete("Will be removed in version 3.x.")]
         public Queue<byte[]> RecvAll(params SendRecvOpt[] flags) {
             return RecvAll((Queue<byte[]>)null, flags);
         }
@@ -655,7 +653,6 @@ namespace ZMQ {
         /// <param name="flags">Receive options</param>
         /// <returns>Queue of message parts</returns>
         /// <exception cref="ZMQ.Exception">ZMQ Exception</exception>
-        [Obsolete("Will be removed in version 3.x.")]
         public Queue<byte[]> RecvAll(Queue<byte[]> messages, params SendRecvOpt[] flags) {
             if (messages == null) {
                 messages = new Queue<byte[]>();
@@ -692,7 +689,6 @@ namespace ZMQ {
         /// <param name="flags">Socket options to use when receiving</param>
         /// <returns>Queue of message parts</returns>
         /// <exception cref="ZMQ.Exception">ZMQ Exception</exception>
-        [Obsolete("Will be removed in version 3.x.")]
         public Queue<string> RecvAll(Encoding encoding, params SendRecvOpt[] flags) {
             var messages = new Queue<string>();
             messages.Enqueue(Recv(encoding, flags));
